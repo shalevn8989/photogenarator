@@ -1,0 +1,348 @@
+<html><head><base href="https://ai-image-generator.app">
+<title>אַבְקַת קְסָמִים - מחולל תמונות קסום</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --bg: #e6e6fa;
+  --text: #001858;
+  --accent: #f582ae;
+  --secondary: #8bd3dd;
+  --hover: #f3d2c1;
+  --border: #001858;
+}
+body {
+  font-family: 'Varela Round', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  line-height: 1.5;
+  direction: rtl;
+  background-image: 
+    radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+    radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+    radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px),
+    radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px);
+  background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px; 
+  background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
+}
+.app {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 20px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+.logo {
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--accent);
+}
+textarea, button {
+  font-family: inherit;
+  font-size: 1rem;
+  border-radius: 15px;
+  transition: all 0.15s ease;
+}
+textarea {
+  width: 100%;
+  padding: 0.625rem;
+  background: var(--secondary);
+  border: 2px solid var(--border);
+  color: var(--text);
+  height: 100px;
+  resize: vertical;
+}
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(245, 130, 174, 0.3);
+}
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+  justify-content: center;
+}
+button {
+  padding: 0.625rem 1rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+button:hover {
+  background: var(--hover);
+  transform: translateY(-2px);
+}
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 130, 174, 0.3);
+}
+.styles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  justify-content: center;
+}
+.style-btn {
+  padding: 0.375rem 0.75rem;
+  background: var(--secondary);
+  border: 2px solid var(--border);
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 20px;
+}
+.style-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.image-container {
+  width: 512px;
+  height: 512px;
+  margin: 0 auto;
+  background: var(--secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid var(--border);
+  position: relative;
+}
+.image-container img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.generating {
+  animation: sparkle 1.5s infinite;
+  font-size: 1.5rem;
+  text-align: center;
+}
+@keyframes sparkle {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 8px;
+  background-color: var(--accent);
+  transition: width 0.3s ease;
+  border-radius: 0 0 0 20px;
+}
+.open-new-tab {
+  display: block;
+  width: 100%;
+  max-width: 512px;
+  margin: 1rem auto;
+}
+@media (max-width: 640px) {
+  .buttons, .styles {
+    justify-content: center;
+  }
+  .image-container {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div class="logo">אַבְקַת קְסָמִים</div>
+  </header>
+
+  <form id="generate-form">
+    <textarea id="prompt" placeholder="תאר את התמונה הקסומה שברצונך ליצור..." required></textarea>
+    <div class="buttons">
+      <button type="submit">צור קסם!</button>
+      <button type="button" id="random">רעיון קסום</button>
+      <button type="button" id="improve">שפר את הקסם</button>
+    </div>
+  </form>
+
+  <div class="styles">
+    <button class="style-btn active">ללא סגנון</button>
+    <button class="style-btn">מצויר</button>
+    <button class="style-btn">פיקסל ארט</button>
+    <button class="style-btn">קומיקס</button>
+    <button class="style-btn">אנימה</button>
+    <button class="style-btn">פנטזיה</button>
+    <button class="style-btn">חלל</button>
+    <button class="style-btn">אגדות</button>
+    <button class="style-btn">חיות חמודות</button>
+    <button class="style-btn">רובוטים</button>
+    <button class="style-btn">דינוזאורים</button>
+    <button class="style-btn">פיות</button>
+  </div>
+
+  <div id="image-container" class="image-container">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <button id="open-new-tab" class="open-new-tab" style="display: none;">פתח בחלון חדש</button>
+</div>
+
+<script>
+const form = document.getElementById('generate-form');
+const prompt = document.getElementById('prompt');
+const imageContainer = document.getElementById('image-container');
+const styleButtons = document.querySelectorAll('.style-btn');
+const randomBtn = document.getElementById('random');
+const improveBtn = document.getElementById('improve');
+const progressBar = document.getElementById('progress-bar');
+const openNewTabBtn = document.getElementById('open-new-tab');
+
+const subjects = ["דרקון קסום", "עיר מרחפת", "יער מכושף", "ספינת חלל צבעונית", "ערפילית קוסמית", "עיר תת-ימית", "רובוט ידידותי", "אי מעופף", "מכונת זמן", "גביש קסמים", "חייזר חמוד", "יצור זוהר", "פיות קטנות", "שער בין-ממדי", "בלון פורח ענק"];
+
+const actions = ["עף דרך", "משחק עם", "הופך ל", "מתמזג עם", "יוצא מתוך", "נמס לתוך", "יוצר", "משנה", "מגלה", "נלחם נגד", "רוקד עם", "מפענח", "מתפתח בתוך", "משנה צורה", "חוקר"];
+
+const environments = ["עולם של ממתקים", "נוף צבעוני", "חברה של צעצועים חיים", "עולם של חלומות", "יקום מקביל", "ממלכה קסומה", "משחק מציאות מדומה", "חפץ עתיק וקסום", "כוכב לכת חי", "סערת צבעים קוסמית", "עולם של בועות סבון", "רשת של מנהרות סודיות", "מבנה של קוביות צבעוניות", "מערבולת זמן", "צומת של עולמות"];
+
+const moods = ["קסום", "הרפתקני", "משעשע", "מסתורי", "שליו", "תוסס", "חלומי", "צבעוני", "נוסטלגי", "שמח", "מפתיע", "הרמוני", "מרגש", "מעורר השראה", "מלא פליאה"];
+
+const styles = ["מצויר ביד", "פיקסל ארט", "סגנון אנימציה", "קומיקס צבעוני", "פנטזיה קסומה", "מדע בדיוני לילדים", "אגדות עם", "חמוד וכיפי", "הרפתקאות מצוירות", "עולם צעצועים", "גרפיטי צבעוני", "איורי ספרי ילדים", "סגנון אנימה", "פופ ארט", "קולאז' צבעוני"];
+
+function generateRandomPrompt() {
+  const subject = subjects[Math.floor(Math.random() * subjects.length)];
+  const action = actions[Math.floor(Math.random() * actions.length)];
+  const environment = environments[Math.floor(Math.random() * environments.length)];
+  const mood = moods[Math.floor(Math.random() * moods.length)];
+  const style = styles[Math.floor(Math.random() * styles.length)];
+
+  return `${subject} ${action} ${environment}, אווירה ${mood}, בסגנון ${style}`;
+}
+
+function enhancePrompt(currentPrompt) {
+  const enhancements = [
+    "הוסף פרטים מעניינים לדמות הראשית",
+    "שפר את התאורה עם צללים והדגשות דרמטיות",
+    "הכנס צבעים עזים ומשלימים",
+    "הוסף אלמנטים אווירתיים כמו קסם נוצץ או בועות צבעוניות",
+    "הוסף טקסטורה ועומק לרקע",
+    "הכנס תנועה או פעולה דינמית",
+    "כלול השתקפויות או שבירת אור אם אפשר",
+    "הוסף אלמנטים קטנים שמספרים סיפור",
+    "חזק את האווירה עם גוונים מתאימים",
+    "השתמש בפרספקטיבה מעניינת או טכניקת קומפוזיציה",
+    "הכנס אלמנטים סמליים שמוסיפים משמעות עמוקה יותר",
+    "הוסף אלמנטים מנוגדים ליצירת עניין חזותי",
+    "הכנס טוויסט לא צפוי או אלמנט סוריאליסטי",
+    "הדגש את הקנה מידה ליצירת תחושה של התפעלות או אינטימיות",
+    "הכנס פרטים שמרמזים על עולם רחב יותר או סיפור גדול יותר"
+  ];
+
+  const selectedEnhancements = enhancements
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 3);
+
+  const enhancedPrompt = `${currentPrompt}\n\nשיפורים:\n- ${selectedEnhancements.join('\n- ')}\n\nשקול להוסיף את האלמנטים הבאים:\n- חקור נושאים או אלמנטים מנוגדים\n- הוסף פרטים לא צפויים שמספרים סיפור\n- חשוב על ההשפעה הרגשית של הצבעים והקומפוזיציה\n- נסה מסגור או פרספקטיבה לא שגרתיים`;
+
+  return enhancedPrompt;
+}
+
+function generateImage(promptText) {
+  const style = document.querySelector('.style-btn.active').textContent;
+  
+  imageContainer.innerHTML = '<div class="generating">יוצר קסם עבורך...</div>';
+  progressBar.style.width = '0%';
+  openNewTabBtn.style.display = 'none';
+  
+  // Simulate API call with progress
+  let progress = 0;
+  const interval = setInterval(() => {
+    progress += 10;
+    progressBar.style.width = `${progress}%`;
+    if (progress >= 100) {
+      clearInterval(interval);
+      const img = new Image();
+      img.src = `https://picsum.photos/512?random=${Math.random()}`;
+      img.alt = `תמונה שנוצרה באמצעות בינה מלאכותית של ${promptText} בסגנון ${style}`;
+      imageContainer.innerHTML = '';
+      imageContainer.appendChild(img);
+      openNewTabBtn.style.display = 'block';
+      openNewTabBtn.onclick = () => window.open(img.src, '_blank');
+    }
+  }, 200);
+}
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (prompt.value.trim() === '') {
+    alert('אנא הכנס תיאור לתמונה');
+    return;
+  }
+  generateImage(prompt.value);
+});
+
+styleButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    styleButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+randomBtn.addEventListener('click', () => {
+  prompt.value = generateRandomPrompt();
+});
+
+improveBtn.addEventListener('click', () => {
+  if (prompt.value.trim() === '') {
+    alert('אנא הכנס תיאור לשיפור');
+  } else {
+    prompt.value = enhancePrompt(prompt.value);
+  }
+});
+
+// Accessibility improvements
+document.querySelectorAll('button').forEach(el => {
+  el.addEventListener('focus', () => el.style.outline = '2px solid var(--hover)');
+  el.addEventListener('blur', () => el.style.outline = 'none');
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey) {
+    switch(e.key) {
+      case 'Enter':
+        e.preventDefault();
+        form.dispatchEvent(new Event('submit'));
+        break;
+      case 'r':
+        e.preventDefault();
+        randomBtn.click();
+        break;
+      case 'i':
+        e.preventDefault();
+        improveBtn.click();
+        break;
+    }
+  }
+});
+
+// Tooltips for buttons
+const addTooltip = (element, text) => {
+  element.title = `${text} (${element.textContent})`;
+};
+
+addTooltip(randomBtn, 'Ctrl+R');
+addTooltip(improveBtn, 'Ctrl+I');
+addTooltip(form.querySelector('button[type="submit"]'), 'Ctrl+Enter');
+</script>
+</body></html>
